@@ -1,0 +1,205 @@
+﻿@using RandomPlaceFQ.Models
+@{
+    ViewBag.Title = "Take me to random";
+}
+
+
+
+
+
+
+
+@section Scripts {
+    <script>
+        var coordinate;
+        var Map;
+       
+
+
+
+        var model = {
+            venue: ko.observableArray(),
+
+        };
+
+        function sendAjaxRequest(httpMethod, callback, url) {
+            $.ajax("/api/Web" + (url ? "/" + url : ""), {
+                type: httpMethod,
+                success: callback
+            });
+        }
+
+        function getAllItems() {
+            sendAjaxRequest("GET", function (data) {
+
+                model.venue.removeAll();
+                model.venue.push(data);
+                
+                changecoordinate(model.venue()[0].location.lat, model.venue()[0].location.lng);
+                showpin();
+
+            });
+
+        }
+
+        function changecoordinate(lat, lng) {
+            var myPlacemark = new ymaps.Placemark(
+              // Координаты метки
+              [lat, lng]
+              );
+
+            // Добавление метки на карту
+            Map.geoObjects.removeAll();
+            Map.geoObjects.add(myPlacemark);
+            Map.setCenter([lat, lng], 14, { duration: 300 });
+        }
+
+
+        function sendrequest(radius, type, price) {
+            $.ajax({
+                url: 'https://api.foursquare.com/v2/venues/explore?client_id=RHZ3UHVB4DJHUFAI3ZTUDJJ20IONR4PNRL21EM0UACMSTR3Z%20&client_secret=R3CV4C3GQ2UOA11535GUCD3KSCKSYILZUS51THX2JV1XIXDQ%20&v=20130815%20&ll=' + coordinate.position[0] + ',' + coordinate.position[1] + '&query=' + type + '&radius=' + radius + '&price=' + price + '&ll=50.457613,%2030.427461&venuePhotos=1',
+                dataType: 'json',
+                success: function (data) {
+                    $("#results").append('all good');
+                    dataJson = data;
+                    console.log(data);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/api/Web',
+                        dataType: 'json',
+                        data: data,
+                    }).done(function () {
+                        getAllItems();
+                     
+
+                    });
+
+                },
+                error: function () {
+                    $("#results").append("error");
+                    alert('error');
+                }
+
+            }
+            );
+
+        };
+
+        ymaps.ready(init);
+        function init() {
+            var geolocation = ymaps.geolocation,
+                myMap = new ymaps.Map('map', {
+                    center: [55, 34],
+                    zoom: 10
+                }, {
+                    searchControlProvider: 'yandex#search'
+                });
+            Map = myMap;
+
+
+            // Сравним положение, вычисленное по ip пользователя и
+            // положение, вычисленное средствами браузера.
+            geolocation.get({
+                provider: 'yandex',
+                mapStateAutoApply: true
+            }).then(function (result) {
+
+            });
+
+            geolocation.get({
+                provider: 'browser',
+                mapStateAutoApply: true
+            }).then(function (result) {
+                // Синим цветом пометим положение, полученное через браузер.
+                // Если браузер не поддерживает эту функциональность, метка не будет добавлена на карту.
+
+                coordinate = result.geoObjects;
+                console.log(coordinate);
+                Map.setCenter([coordinate.position[0], coordinate.position[1]], 14, { duration: 300 });
+            });
+
+         
+
+
+        }
+
+
+
+        $(document).ready(function () {
+
+            ko.applyBindings(model);
+            $("#place").hide();
+          
+
+        });
+
+        function showpin() {
+       
+            console.log("gogogo")
+            $("#place").show();
+        };
+    </script>
+}
+
+@section Body {
+   
+    
+       
+
+
+                
+    
+    
+
+<div class="container-fluid nopadding ">
+    @Html.Partial("HomeVideo")
+    <div class="row">
+        <div class="col-md-3 col-xs-5 nopadding">
+            
+                    <div id="editor" class="panel noborder">
+                        @Html.Partial("Editor", new Request())
+
+                    </div>
+                   
+        </div>
+      
+        <div class="col-md-9 col-xs-7 nopadding">
+            <div id="map" class="mapsize"></div>
+            <div class="placepin">
+
+                <div id="place" class="panel noborder">
+                    <div class="panel-heading">Place</div>
+                    <div class="panel-body">
+
+
+                            <div data-bind="foreach: venue">
+                                <img  data-bind="attr:{src: photos.groups[0].items[0].prefix+'100x100'+ photos.groups[0].items[0].suffix}" />  
+                                    <p data-bind="text: name"></p>
+                                    <p data-bind="text: location.address"></p>
+                                    <a  target="_blank" data-bind="attr:{href: url}, text: url"></a>
+                                    <p data-bind="text: contact.phone"></p>
+                                   
+                                    
+
+
+
+                              
+
+                            </div>
+
+                       <div class="text-center">
+                        <button  class="btn btn-md btn-go"
+                                onclick="getAllItems()">
+                            Next
+                        </button>
+                           </div>
+                    </div>
+                </div> 
+
+            </div>
+        </div>
+
+    </div>
+</div>
+   
+}

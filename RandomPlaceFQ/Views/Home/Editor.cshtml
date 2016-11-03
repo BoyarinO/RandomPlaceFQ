@@ -1,0 +1,32 @@
+﻿@model RandomPlaceFQ.Models.Request
+
+<div class="panel-heading">
+Lead me random</div>
+<div class="panel-body">
+    <div class="inputarea">
+        <div class="form-group">
+
+            <input type="text" id="textboxtype" class="form-control" placeholder="Suggestions (e.g. beer,desert)" aria-describedby="basic-addon1">
+        </div>
+        <div class="form-group">
+
+            <input type="text" id="textboxradius" class="form-control" placeholder="Radius (km)" aria-describedby="basic-addon1">
+
+        </div>
+
+        <div class="form-group">
+
+            <select class="form-control" name="size" id="comboboxprice" aria-describedby="basic-addon1">
+                <option value="">Choose a price</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+
+        </div>
+    </div>
+    <div class="text-center">
+        <button id="gobutton" class="btn btn-md btn-go" onclick="sendrequest(document.getElementById('textboxradius').value * 1000, document.getElementById('textboxtype').value, document.getElementById('comboboxprice').value)">Go</button>
+    </div>
+</div>
